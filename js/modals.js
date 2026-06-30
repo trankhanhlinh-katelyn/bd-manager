@@ -137,7 +137,6 @@ const Modals = {
   },
 
   _dealDetailHTML(deal, tasks, stage) {
-    const doneTasks = tasks.filter(t => t.status === 'done').length;
     return `
       <div class="modal-header">
         <div>
@@ -153,7 +152,6 @@ const Modals = {
         </div>
       </div>
       <div class="modal-body">
-        <!-- INFO -->
         <div class="deal-info-grid" style="margin-bottom:16px">
           <div class="info-item"><div class="info-item-label">Công ty</div><div class="info-item-value">${deal.company||'—'}</div></div>
           <div class="info-item"><div class="info-item-label">Giá trị</div><div class="info-item-value" style="color:var(--primary)">${fmtMoney(deal.value)}</div></div>
@@ -164,13 +162,11 @@ const Modals = {
         </div>
         ${deal.notes ? `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text-2);margin-bottom:16px">${deal.notes}</div>` : ''}
 
-        <!-- TABS -->
         <div class="deal-detail-tabs">
           <div class="detail-tab active" data-tab="tasks">Công việc (${tasks.length})</div>
           <div class="detail-tab" data-tab="activity">Lịch sử hoạt động</div>
         </div>
 
-        <!-- TASKS TAB -->
         <div id="detail-tab-tasks">
           <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
             <button class="btn-primary" id="dd-add-task" style="padding:7px 12px;font-size:12px">+ Thêm task</button>
@@ -180,7 +176,6 @@ const Modals = {
           </div>
         </div>
 
-        <!-- ACTIVITY TAB -->
         <div id="detail-tab-activity" style="display:none">
           <div class="activity-log" id="detail-activity-log">
             ${this._renderActivity(deal.activityLog || [])}
@@ -197,9 +192,9 @@ const Modals = {
   _renderDetailTasks(tasks) {
     if (!tasks.length) return `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg><div class="empty-state-title">Chưa có task nào</div></div>`;
     return tasks.map(t => {
-      const done = t.subtasks?.filter(s => s.done).length || 0;
+      const done  = t.subtasks?.filter(s => s.done).length || 0;
       const total = t.subtasks?.length || 0;
-      const statusLabel = { todo: 'Chưa làm', in_progress: 'Đang làm', done: 'Hoàn thành' }[t.status] || '';
+      const r     = getReminderSummary(t);
       return `
         <div class="task-card" style="margin-bottom:8px">
           <div class="task-card-main">
@@ -209,6 +204,7 @@ const Modals = {
               <div class="task-card-meta">
                 <span class="task-badge badge-prio-${t.priority}">${{high:'Cao',medium:'TB',low:'Thấp'}[t.priority]||''}</span>
                 ${t.dueDate ? `<span class="task-badge badge-due ${isOverdue(t.dueDate)?'overdue':isSoon(t.dueDate)?'soon':''}">${fmtDateShort(t.dueDate)}</span>` : ''}
+                ${r ? `<span class="task-badge reminder-badge">🔔 ${r}</span>` : ''}
                 ${t.assignees?.length ? `<span class="text-muted">${t.assignees.join(', ')}</span>` : ''}
                 ${total > 0 ? `<span class="text-muted">${done}/${total} subtask</span>` : ''}
               </div>
@@ -245,7 +241,6 @@ const Modals = {
   },
 
   _bindDealDetail(deal, tasks) {
-    // tabs
     document.querySelectorAll('.detail-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
@@ -255,12 +250,8 @@ const Modals = {
       });
     });
 
-    // add task from deal detail
-    document.getElementById('dd-add-task').onclick = () => {
-      this.openTaskForm(deal.id);
-    };
+    document.getElementById('dd-add-task').onclick = () => this.openTaskForm(deal.id);
 
-    // add activity
     document.getElementById('dd-activity-add').onclick = () => {
       const input = document.getElementById('dd-activity-input');
       const text  = input.value.trim();
@@ -276,13 +267,20 @@ const Modals = {
 
   /* ── TASK FORM ── */
   openTaskForm(dealId = null, taskId = null) {
-    const task  = taskId ? Storage.getTask(taskId) : null;
-    const deals = Storage.getDeals();
+    const task   = taskId ? Storage.getTask(taskId) : null;
+    const deals  = Storage.getDeals();
     const contacts = Storage.getContacts();
     const datalistOpts = contacts.map(c => `<option value="${c}">`).join('');
-    const title = task ? 'Chỉnh sửa Task' : 'Thêm Task mới';
-
+    const title  = task ? 'Chỉnh sửa Task' : 'Thêm Task mới';
     const effectiveDealId = task?.dealId || dealId;
+
+    // Get existing reminder data (support old reminderAt format)
+    const r = task?.reminder || (task?.reminderAt ? {
+      type: 'once',
+      startDate: task.reminderAt.slice(0, 10),
+      time: task.reminderAt.slice(11, 16),
+      endDate: null, daysBefore: null
+    } : null);
 
     openModal(`
       <div class="modal-header">
@@ -313,22 +311,70 @@ const Modals = {
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label class="form-label">Ưu tiên</label>
+            <select id="ft-priority" class="form-control">
+              <option value="high"   ${task?.priority==='high'?'selected':''}>Cao</option>
+              <option value="medium" ${task?.priority==='medium'||!task?'selected':''}>Trung bình</option>
+              <option value="low"    ${task?.priority==='low'?'selected':''}>Thấp</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label class="form-label">Hạn hoàn thành</label>
             <input id="ft-due" class="form-control" type="date" value="${task?.dueDate ? task.dueDate.slice(0,10) : ''}" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Nhắc nhở (ngày giờ)</label>
-            <input id="ft-reminder" class="form-control" type="datetime-local" value="${task?.reminderAt ? task.reminderAt.slice(0,16) : ''}" />
+        </div>
+
+        <!-- REMINDER SECTION -->
+        <div class="reminder-section">
+          <div class="reminder-section-title">🔔 Cài đặt nhắc nhở</div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Kiểu nhắc</label>
+            <select id="ft-reminder-type" class="form-control" onchange="Modals._onReminderTypeChange()">
+              <option value="none"       ${!r||r.type==='none'?'selected':''}>Không nhắc</option>
+              <option value="once"       ${r?.type==='once'?'selected':''}>Một lần</option>
+              <option value="daily"      ${r?.type==='daily'?'selected':''}>Hàng ngày</option>
+              <option value="weekly"     ${r?.type==='weekly'?'selected':''}>Hàng tuần (cùng thứ)</option>
+              <option value="workdays"   ${r?.type==='workdays'?'selected':''}>Ngày làm việc (T2 – T6)</option>
+              <option value="before_due" ${r?.type==='before_due'?'selected':''}>Trước hạn N ngày</option>
+            </select>
+          </div>
+
+          <div id="ft-reminder-fields" style="display:${r&&r.type!=='none'?'':'none'}">
+            <div class="form-row" id="ft-r-startrow" style="display:${r?.type==='before_due'?'none':''}">
+              <div class="form-group">
+                <label class="form-label">Bắt đầu nhắc từ ngày</label>
+                <input id="ft-reminder-start" class="form-control" type="date" value="${r?.startDate||''}" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Lúc mấy giờ</label>
+                <input id="ft-reminder-time" class="form-control" type="time" value="${r?.time||'09:00'}" />
+              </div>
+            </div>
+
+            <div class="form-row" id="ft-r-endrow" style="display:${!r||r.type==='once'||r.type==='before_due'?'none':''}">
+              <div class="form-group">
+                <label class="form-label">Nhắc đến ngày (trống = đến hạn task)</label>
+                <input id="ft-reminder-end" class="form-control" type="date" value="${r?.endDate||''}" />
+              </div>
+            </div>
+
+            <div class="form-row" id="ft-r-beforerow" style="display:${r?.type==='before_due'?'':'none'}">
+              <div class="form-group">
+                <label class="form-label">Giờ nhắc</label>
+                <input id="ft-reminder-time2" class="form-control" type="time" value="${r?.time||'09:00'}" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nhắc trước hạn bao nhiêu ngày</label>
+                <input id="ft-reminder-days" class="form-control" type="number" min="1" max="60" value="${r?.daysBefore||1}" placeholder="Số ngày" />
+              </div>
+            </div>
+
+            <div class="reminder-note">
+              💡 Thông báo nhắc nhở sẽ hiển thị tên tất cả người được assign — bạn có thể <strong>copy và gửi</strong> cho họ qua Zalo / Slack.
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Ưu tiên</label>
-          <select id="ft-priority" class="form-control">
-            <option value="high"   ${task?.priority==='high'?'selected':''}>Cao</option>
-            <option value="medium" ${task?.priority==='medium'||!task?'selected':''}>Trung bình</option>
-            <option value="low"    ${task?.priority==='low'?'selected':''}>Thấp</option>
-          </select>
-        </div>
+
         <div class="form-group">
           <label class="form-label">Người phụ trách (nhấn Enter để thêm)</label>
           <datalist id="ft-contacts-list">${datalistOpts}</datalist>
@@ -367,7 +413,7 @@ const Modals = {
 
     const tagCtrl = renderTagsInput('ft-assignees-wrap', 'ft-assignees-input', task?.assignees || []);
 
-    // add subtask inline
+    // Subtask add
     if (task) {
       document.getElementById('ft-add-sub').onclick = () => {
         const input = document.getElementById('ft-new-sub');
@@ -398,11 +444,9 @@ const Modals = {
 
       let subtasks = task?.subtasks || [];
       if (task) {
-        // collect from DOM
         subtasks = [];
         document.querySelectorAll('#ft-subtasks .subtask-row').forEach(row => {
-          const isNew = row.dataset.new === '1';
-          if (isNew) {
+          if (row.dataset.new === '1') {
             subtasks.push({ id: uid(), title: row.dataset.title, done: row.dataset.done === 'true', assignees: [] });
           } else {
             const id = row.id.replace('sub-', '');
@@ -412,14 +456,14 @@ const Modals = {
         });
       }
 
-      const reminderRaw = document.getElementById('ft-reminder').value;
+      const reminder = this._buildReminder();
       const updated = {
         id: task?.id || uid(),
         dealId: document.getElementById('ft-deal').value || null,
         title,
         description: document.getElementById('ft-desc').value.trim(),
         dueDate: document.getElementById('ft-due').value || null,
-        reminderAt: reminderRaw ? new Date(reminderRaw).toISOString() : null,
+        reminder,
         status: document.getElementById('ft-status').value,
         priority: document.getElementById('ft-priority').value,
         assignees: tagCtrl.getTags(),
@@ -429,12 +473,10 @@ const Modals = {
       };
 
       Storage.saveTask(updated);
-      if (updated.reminderAt) Notifications.scheduleReminder(updated);
+      Notifications.reschedule();
       closeModal();
       showToast(task ? 'Đã cập nhật task' : 'Đã thêm task mới', 'success');
       App.refresh();
-
-      // if opened from deal detail, re-open it
       if (effectiveDealId) Modals.openDealDetail(effectiveDealId);
     };
 
@@ -448,4 +490,53 @@ const Modals = {
       };
     }
   },
+
+  // Called by onchange on the reminder type dropdown
+  _onReminderTypeChange() {
+    const type     = document.getElementById('ft-reminder-type').value;
+    const fields   = document.getElementById('ft-reminder-fields');
+    const startRow = document.getElementById('ft-r-startrow');
+    const endRow   = document.getElementById('ft-r-endrow');
+    const beforeRow= document.getElementById('ft-r-beforerow');
+
+    if (type === 'none') { fields.style.display = 'none'; return; }
+    fields.style.display = '';
+
+    startRow.style.display  = type === 'before_due' ? 'none' : '';
+    endRow.style.display    = (type === 'once' || type === 'before_due') ? 'none' : '';
+    beforeRow.style.display = type === 'before_due' ? '' : 'none';
+  },
+
+  _buildReminder() {
+    const type = document.getElementById('ft-reminder-type')?.value || 'none';
+    if (type === 'none') return null;
+
+    if (type === 'before_due') {
+      return {
+        type,
+        time: document.getElementById('ft-reminder-time2')?.value || '09:00',
+        daysBefore: parseInt(document.getElementById('ft-reminder-days')?.value) || 1,
+        startDate: null,
+        endDate: null,
+      };
+    }
+
+    return {
+      type,
+      startDate: document.getElementById('ft-reminder-start')?.value || null,
+      endDate:   document.getElementById('ft-reminder-end')?.value   || null,
+      time:      document.getElementById('ft-reminder-time')?.value  || '09:00',
+      daysBefore: null,
+    };
+  },
 };
+
+/* helper: short reminder description for badges */
+function getReminderSummary(task) {
+  const r = task.reminder;
+  if (!r || r.type === 'none') return null;
+  const typeMap = { once: 'Một lần', daily: 'Hàng ngày', weekly: 'Hàng tuần', workdays: 'T2-T6', before_due: `Trước ${r.daysBefore||1} ngày` };
+  const label = typeMap[r.type] || '';
+  const time  = r.time ? ` ${r.time}` : '';
+  return label + time;
+}

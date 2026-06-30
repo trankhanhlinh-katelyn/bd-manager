@@ -105,7 +105,7 @@ const TasksView = {
             ${deal ? `<span class="task-badge badge-deal">${deal.name}</span>` : ''}
             <span class="task-badge badge-prio-${task.priority}">${prioMap[task.priority]||''}</span>
             ${task.dueDate ? `<span class="task-badge badge-due ${dueCls}">${fmtDateShort(task.dueDate)} · ${fmtRelative(task.dueDate)}</span>` : ''}
-            ${task.reminderAt ? `<span class="task-badge" style="background:#F5F3FF;color:#7C3AED">🔔 ${fmtDateShort(task.reminderAt)}</span>` : ''}
+            ${getReminderSummary(task) ? `<span class="task-badge reminder-badge">🔔 ${getReminderSummary(task)}</span>` : ''}
             ${task.assignees?.length ? `<span class="text-muted">${task.assignees.join(', ')}</span>` : ''}
           </div>
         </div>
