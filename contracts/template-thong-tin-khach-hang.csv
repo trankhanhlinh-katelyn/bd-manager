@@ -1,0 +1,41 @@
+Nhom,Truong,Mo_ta,Gia_tri,Vi_du
+BEN_A,ten_cong_ty,Tên công ty đầy đủ (ghi chính xác như đăng ký kinh doanh),CÔNG TY CỔ PHẦN KIM KHÍ VÀ GIA DỤNG TÂN Á ĐẠI THÀNH,CÔNG TY CỔ PHẦN ABC
+BEN_A,ho_ten_dai_dien,Họ tên người đại diện ký hợp đồng,Bà Nguyễn Ngọc Thuỳ Dương,Bà Nguyễn Thị A
+BEN_A,chuc_vu,Chức vụ,Phó Giám Đốc,Giám Đốc
+BEN_A,so_uy_quyen,"Số giấy uỷ quyền (để trống nếu GĐ ký trực tiếp)",166B/2024/GUQ-TDH,166B/2024/GUQ-TDH
+BEN_A,ngay_uy_quyen,"Ngày lập giấy uỷ quyền (DD/MM/YYYY; để trống nếu GĐ ký)",01/10/2024,01/10/2024
+BEN_A,dia_chi,Địa chỉ đầy đủ,"Khu Công Nghiệp Thanh Liêm, Phường Châu Sơn, Tỉnh Ninh Bình, Việt Nam","123 Đường ABC, Quận 1, TP.HCM"
+BEN_A,so_dien_thoai,Số điện thoại công ty,02436877777,02412345678
+BEN_A,ma_so_thue,Mã số thuế,0108705693,0312345678
+BEN_A,so_tai_khoan,Số tài khoản ngân hàng Bên A,0021116609999,1234567890
+BEN_A,ngan_hang,Tên ngân hàng và chi nhánh Bên A,Ngân hàng TMCP Quân Đội – CN Sở Giao Dịch 1,Ngân hàng TMCP Ngoại Thương Việt Nam – CN Hà Nội
+HOP_DONG,so_hop_dong,Số hợp đồng,127/2026/HĐ-SEO,127/2026/HĐ-SEO
+HOP_DONG,ngay_ky,Ngày ký hợp đồng (DD/MM/YYYY),03/07/2026,03/07/2026
+HOP_DONG,website,URL website cần SEO,https://shop.tanadaithanh.vn/,https://shop.example.com/
+DU_AN,goi_dich_vu,Tên gói dịch vụ,SEO AI Max,SEO AI Max
+DU_AN,thoi_gian_du_an,Tổng thời gian dự án (số tháng),4,6
+DU_AN,thoi_gian_onpage,Thời gian Onpage (số tháng),1,1
+DU_AN,thoi_gian_day_top,Thời gian đẩy top (số tháng),3,5
+DU_AN,ngay_bat_dau,Ngày bắt đầu dự kiến (MM/YYYY),07/2026,07/2026
+KPIs,kpi_top5_pct,% từ khóa vào TOP 5 tìm kiếm Google,10,10
+KPIs,kpi_top10_pct,% từ khóa vào TOP 10 tìm kiếm Google,30,30
+KPIs,kpi_traffic,Organic traffic tăng thêm (click/tháng),2000,2000
+KPIs,kpi_aio_top3_pct,"% hiển thị AIO Top 3 (để trống nếu không cam kết AIO)",,15
+KPIs,kpi_aio_kw_pct,"% từ khóa hiển thị AIO (để trống nếu không cam kết AIO)",,20
+KPIs,so_luong_tu_khoa,Tổng số từ khóa đẩy TOP,,100
+TAI_CHINH,gia_tri_co_vat,Tổng giá trị hợp đồng đã gồm VAT (VNĐ — chỉ nhập số),260000000,260000000
+TAI_CHINH,chi_phi_onpage,"Chi phí Tư vấn Onpage, chưa VAT (VNĐ — chỉ nhập số)",,50000000
+TAI_CHINH,chi_phi_top5,"Chi phí Tối ưu TOP 5, chưa VAT (VNĐ — chỉ nhập số)",,80000000
+TAI_CHINH,chi_phi_top10,"Chi phí Tối ưu TOP 10, chưa VAT (VNĐ — chỉ nhập số)",,110740741
+TAI_CHINH,vat_pct,Tỷ lệ VAT (chỉ nhập số; mặc định 8),8,8
+THANH_TOAN,dot1_pct,% thanh toán đợt 1 (chỉ nhập số),40,40
+THANH_TOAN,dot1_dieu_kien,Điều kiện thanh toán đợt 1,Tạm ứng khi ký HĐ và phụ lục,Tạm ứng khi ký HĐ và phụ lục
+THANH_TOAN,dot2_pct,% thanh toán đợt 2 (chỉ nhập số),30,30
+THANH_TOAN,dot2_dieu_kien,Điều kiện thanh toán đợt 2,Hoàn thành nghiệm thu Onpage,Hoàn thành nghiệm thu Onpage
+THANH_TOAN,dot3_pct,% thanh toán đợt 3 (chỉ nhập số),30,30
+THANH_TOAN,dot3_dieu_kien,Điều kiện thanh toán đợt 3,"Hoàn thành 100% KPIs: 10% TOP5, 30% TOP10","Hoàn thành 100% KPIs: 10% TOP5, 30% TOP10"
+BAO_HANH,bao_hanh_thang,Thời gian bảo hành sau khi đạt KPIs (số tháng),3,3
+DAU_MOI_A,dau_moi_ho_ten,Họ tên đầu mối dự án Bên A (người duyệt nội dung),,Nguyễn Văn B
+DAU_MOI_A,dau_moi_chuc_vu,Chức vụ đầu mối,,Marketing Manager
+DAU_MOI_A,dau_moi_email,Email đầu mối,,nguyen.b@tanadaithanh.vn
+DAU_MOI_A,dau_moi_sdt,Số điện thoại đầu mối,,0912345678
