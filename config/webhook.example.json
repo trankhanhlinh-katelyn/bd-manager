@@ -1,0 +1,7 @@
+{
+  "zalo_webhook_url": "https://your-zalo-oa-webhook-url-here",
+  "slack_webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+  "default_platform": "zalo",
+  "team_name": "SEONGON BD Team",
+  "notification_prefix": "🔔 BD Manager"
+}
