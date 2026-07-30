@@ -17,7 +17,7 @@ def fmt(n):
 
 def parse_date(s):
     if not s: return None
-    try: return datetime.fromisoformat(s.replace('Z','+00:00'))
+    try: return datetime.fromisoformat(s.replace('Z','+00:00')).replace(tzinfo=None)
     except: return None
 
 def main():
